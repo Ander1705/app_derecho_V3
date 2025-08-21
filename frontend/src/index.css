@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    margin: 0;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* Animaciones personalizadas */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+  }
+  
+  @keyframes fade-in {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes slide-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes bounce-soft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  
+  @keyframes float-slow {
+    0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+    33% { transform: translate3d(30px, -30px, 0) rotate(2deg); }
+    66% { transform: translate3d(-20px, 20px, 0) rotate(-2deg); }
+  }
+  
+  @keyframes float-reverse {
+    0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+    50% { transform: translate3d(-25px, -15px, 0) rotate(-1deg); }
+  }
+  
+  @keyframes float-fast {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    25% { transform: translate3d(10px, -10px, 0) scale(1.05); }
+    75% { transform: translate3d(-15px, 5px, 0) scale(0.95); }
+  }
+  
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.8s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up 0.6s ease-out;
+  }
+  
+  .animate-bounce-soft {
+    animation: bounce-soft 3s ease-in-out infinite;
+  }
+  
+  .animate-float-slow {
+    animation: float-slow 20s ease-in-out infinite;
+  }
+  
+  .animate-float-reverse {
+    animation: float-reverse 15s ease-in-out infinite reverse;
+  }
+  
+  .animate-float-fast {
+    animation: float-fast 12s ease-in-out infinite;
+  }
+
+
+  /* Pulse muy lento y sutil para el escudo */
+  @keyframes pulse-very-slow {
+    0%, 100% { 
+      opacity: 0.01; 
+    }
+    50% { 
+      opacity: 0.03; 
+    }
+  }
+
+  .animate-pulse-very-slow {
+    animation: pulse-very-slow 12s ease-in-out infinite;
+  }
+
+  /* Efectos ultra sutiles para el fondo */
+  @keyframes pulse-ultra-slow {
+    0%, 100% { 
+      opacity: 0.02; 
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 0.06; 
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes float-ultra-slow {
+    0%, 100% { 
+      opacity: 0.03; 
+      transform: translateY(0px);
+    }
+    50% { 
+      opacity: 0.08; 
+      transform: translateY(-5px);
+    }
+  }
+
+  .animate-pulse-ultra-slow {
+    animation: pulse-ultra-slow 20s ease-in-out infinite;
+  }
+
+  .animate-float-ultra-slow {
+    animation: float-ultra-slow 25s ease-in-out infinite;
+  }
+
+  /* Animaciones para intercambio de formularios */
+  @keyframes slide-out-left {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-100%); opacity: 0; }
+  }
+
+  @keyframes slide-in-right {
+    0% { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes slide-out-right {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(100%); opacity: 0; }
+  }
+
+  @keyframes slide-in-left {
+    0% { transform: translateX(-100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+  }
+
+  .animate-slide-out-left {
+    animation: slide-out-left 0.5s ease-in-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.5s ease-in-out forwards;
+  }
+
+  .animate-slide-out-right {
+    animation: slide-out-right 0.5s ease-in-out forwards;
+  }
+
+  .animate-slide-in-left {
+    animation: slide-in-left 0.5s ease-in-out forwards;
+  }
+
+  /* Animación simple para transición solo de registro a login */
+  @keyframes fadeSlideOut {
+    0% { 
+      opacity: 1; 
+      transform: translateX(0);
+    }
+    100% { 
+      opacity: 0; 
+      transform: translateX(-30px);
+    }
+  }
+
+  @keyframes fadeSlideIn {
+    0% { 
+      opacity: 0; 
+      transform: translateX(30px);
+    }
+    100% { 
+      opacity: 1; 
+      transform: translateX(0);
+    }
+  }
+
+  .animate-fade-slide-out {
+    animation: fadeSlideOut 0.4s ease-in-out forwards;
+  }
+
+  .animate-fade-slide-in {
+    animation: fadeSlideIn 0.4s ease-in-out forwards;
+  }
+
+
+  /* Botones corporativos */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-university-blue hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200;
+  }
+  
+  .btn-gold {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-university-gold hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-200;
+  }
+  
+  /* Cards corporativas */
+  .card-corporate {
+    @apply bg-white rounded-lg shadow-corporate border border-gray-200 overflow-hidden;
+  }
+  
+  .card-header {
+    @apply px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-slate-100;
+  }
+  
+  .card-body {
+    @apply px-6 py-4;
+  }
+  
+  /* Formularios */
+  .form-input {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+  }
+  
+  .form-error {
+    @apply mt-1 text-sm text-red-600;
+  }
+}
