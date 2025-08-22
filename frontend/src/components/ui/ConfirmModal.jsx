@@ -60,7 +60,7 @@ const ConfirmModal = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-theme-primary p-6 text-left align-middle shadow-xl transition-all border border-theme">
                 <div className="flex items-center mb-4">
                   <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
                     type === 'danger' ? 'bg-red-100' : 
@@ -71,7 +71,7 @@ const ConfirmModal = ({
                   <div className="ml-4">
                     <Dialog.Title
                       as="h3"
-                      className="text-lg font-semibold leading-6 text-gray-900"
+                      className="text-lg font-semibold leading-6 text-theme-primary"
                     >
                       {title}
                     </Dialog.Title>
@@ -79,7 +79,7 @@ const ConfirmModal = ({
                 </div>
 
                 <div className="mb-6">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-theme-secondary">
                     {message}
                   </p>
                 </div>
@@ -87,7 +87,7 @@ const ConfirmModal = ({
                 <div className="flex gap-3 justify-end">
                   <button
                     type="button"
-                    className="inline-flex justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors"
+                    className="inline-flex justify-center rounded-lg border border-theme bg-theme-primary px-4 py-2 text-sm font-medium text-theme-primary hover:bg-theme-tertiary focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors"
                     onClick={onClose}
                   >
                     {cancelText}

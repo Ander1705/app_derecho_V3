@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
+import { useTheme } from '../../contexts/ThemeContext'
 import Sidebar from './Sidebar'
 import Header from './Header'
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { isDark } = useTheme()
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50">
+    <div className={`h-screen flex flex-col ${
+      isDark ? 'bg-theme-secondary' : 'bg-slate-50'
+    }`}>
       {/* Header fijo en la parte superior */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <Header onMenuClick={() => setSidebarOpen(true)} />
@@ -21,14 +25,18 @@ const Layout = () => {
             className="fixed inset-0 bg-black bg-opacity-25"
             onClick={() => setSidebarOpen(false)}
           ></div>
-          <div className="relative flex flex-col w-64 max-w-xs h-full bg-white shadow-xl">
+          <div className={`relative flex flex-col w-64 max-w-xs h-full shadow-xl ${
+            isDark ? 'bg-theme-primary' : 'bg-white'
+          }`}>
             <Sidebar onClose={() => setSidebarOpen(false)} />
           </div>
         </div>
 
         {/* Sidebar para desktop - fijo y sticky */}
         <div className="hidden lg:flex lg:flex-shrink-0 lg:w-100">
-          <div className="fixed left-0 top-16 bottom-0 w-64 flex flex-col bg-white border-r border-gray-200 z-30">
+          <div className={`fixed left-0 top-16 bottom-0 w-64 flex flex-col z-30 ${
+            isDark ? 'bg-theme-primary border-r border-theme' : 'bg-white border-r border-gray-200'
+          }`}>
             <Sidebar />
           </div>
         </div>

@@ -1,15 +1,19 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTheme } from '../../contexts/ThemeContext'
+import { Link } from 'react-router-dom'
 import { 
   Bars3Icon, 
   BellIcon, 
   UserCircleIcon,
-  Cog6ToothIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  SunIcon,
+  MoonIcon
 } from '@heroicons/react/24/outline'
 
 const Header = ({ onMenuClick }) => {
   const { user, logout } = useAuth()
+  const { theme, toggleTheme, isDark } = useTheme()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const userMenuRef = useRef(null)
@@ -37,7 +41,7 @@ const Header = ({ onMenuClick }) => {
   }
 
   return (
-    <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <div className="bg-theme-primary shadow-theme border-b border-theme sticky top-0 z-40 transition-all duration-300">
       <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
         {/* Lado izquierdo */}
         <div className="flex items-center">
@@ -59,10 +63,10 @@ const Header = ({ onMenuClick }) => {
               />
             </div>
             <div className="ml-3">
-              <h1 className="text-lg font-bold text-gray-900">
+              <h1 className="text-lg font-bold text-theme-primary">
                 Universidad Colegio Mayor de Cundinamarca
               </h1>
-              <p className="text-sm text-gray-600 hidden sm:block">
+              <p className="text-sm text-theme-secondary hidden sm:block">
                 Facultad de Derecho - Sistema de Estudiantes
               </p>
             </div>
@@ -71,18 +75,38 @@ const Header = ({ onMenuClick }) => {
 
         {/* Lado derecho */}
         <div className="flex items-center space-x-4">
-          {/* Buscador */}
-          <div className="hidden md:block">
+          {/* Buscador y Toggle de Tema */}
+          <div className="hidden md:flex items-center space-x-3">
             <div className="relative">
               <input
                 type="search"
                 placeholder="Buscar casos, clientes..."
-                className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                className="w-64 pl-10 pr-4 py-2 border border-theme rounded-lg text-sm bg-theme-primary text-theme-primary focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-colors duration-300"
               />
               <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
+            
+            {/* Toggle de Tema Elegante */}
+            <button
+              onClick={toggleTheme}
+              className="relative p-2 rounded-lg bg-theme-secondary border border-theme hover:bg-theme-tertiary transition-all duration-300 group"
+              title={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+            >
+              <div className="relative w-5 h-5">
+                <SunIcon 
+                  className={`absolute inset-0 h-5 w-5 text-yellow-500 transition-all duration-300 transform ${
+                    isDark ? 'rotate-90 scale-100 opacity-100' : 'rotate-0 scale-75 opacity-0'
+                  }`}
+                />
+                <MoonIcon 
+                  className={`absolute inset-0 h-5 w-5 text-blue-600 transition-all duration-300 transform ${
+                    !isDark ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-75 opacity-0'
+                  }`}
+                />
+              </div>
+            </button>
           </div>
 
           {/* Notificaciones */}
@@ -128,10 +152,10 @@ const Header = ({ onMenuClick }) => {
 
           {/* Información del usuario */}
           <div className="flex items-center text-sm">
-            <span className="hidden md:block text-gray-700 mr-3">
+            <span className="hidden md:block text-theme-primary mr-3">
               {user?.nombre} {user?.apellidos}
             </span>
-            <span className="hidden md:block text-xs text-gray-500 mr-3 px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
+            <span className="hidden md:block text-xs text-purple-800 mr-3 px-2 py-1 bg-purple-100 rounded-full">
               {user?.role}
             </span>
           </div>
@@ -147,32 +171,31 @@ const Header = ({ onMenuClick }) => {
 
             {/* Dropdown del usuario */}
             {userMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+              <div className="absolute right-0 mt-2 w-56 bg-theme-primary rounded-md shadow-theme ring-1 ring-black ring-opacity-5 z-50 border border-theme transition-all duration-300">
                 <div className="py-1">
-                  <div className="px-4 py-3 border-b border-gray-200">
-                    <p className="text-sm font-medium text-gray-900">
+                  <div className="px-4 py-3 border-b border-theme">
+                    <p className="text-sm font-medium text-theme-primary">
                       {user?.nombre} {user?.apellidos}
                     </p>
-                    <p className="text-sm text-gray-500">{user?.email}</p>
-                    <p className="text-xs text-gray-400 mt-1 capitalize">
+                    <p className="text-sm text-theme-secondary">{user?.email}</p>
+                    <p className="text-xs text-theme-muted mt-1 capitalize">
                       Rol: {user?.role}
                     </p>
                   </div>
                   
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link 
+                    to="/perfil"
+                    className="flex items-center w-full px-4 py-2 text-sm text-theme-primary hover:bg-theme-tertiary transition-colors duration-200"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
                     <UserCircleIcon className="h-4 w-4 mr-3" />
                     Mi Perfil
-                  </button>
+                  </Link>
                   
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    <Cog6ToothIcon className="h-4 w-4 mr-3" />
-                    Configuración
-                  </button>
-                  
-                  <div className="border-t border-gray-200">
+                  <div className="border-t border-theme">
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
                     >
                       <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
                       Cerrar Sesión

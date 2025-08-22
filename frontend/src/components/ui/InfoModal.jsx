@@ -70,7 +70,7 @@ const InfoModal = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-theme-primary p-6 text-left align-middle shadow-xl transition-all border border-theme">
                 <div className="flex items-start mb-4">
                   <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${getIconBg()}`}>
                     {getIcon()}
@@ -78,7 +78,7 @@ const InfoModal = ({
                   <div className="ml-4 flex-1">
                     <Dialog.Title
                       as="h3"
-                      className="text-lg font-semibold leading-6 text-gray-900"
+                      className="text-lg font-semibold leading-6 text-theme-primary"
                     >
                       {title}
                     </Dialog.Title>
@@ -87,17 +87,17 @@ const InfoModal = ({
 
                 <div className="mb-6">
                   {message && (
-                    <p className="text-sm text-gray-600 mb-4">
+                    <p className="text-sm text-theme-secondary mb-4">
                       {message}
                     </p>
                   )}
                   
                   {details.length > 0 && (
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">Detalles:</h4>
+                    <div className="bg-theme-tertiary rounded-lg p-4">
+                      <h4 className="text-sm font-medium text-theme-primary mb-2">Detalles:</h4>
                       <ul className="space-y-1">
                         {details.map((detail, index) => (
-                          <li key={index} className="text-sm text-gray-600">
+                          <li key={index} className="text-sm text-theme-secondary">
                             <span className="inline-block w-2 h-2 bg-university-blue rounded-full mr-2"></span>
                             {detail}
                           </li>
@@ -108,8 +108,8 @@ const InfoModal = ({
 
                   {showCopyButton && copyData && (
                     <div className="mt-4">
-                      <div className="flex items-center justify-between bg-gray-100 rounded-lg p-3">
-                        <span className="text-sm text-gray-700 font-mono">{copyData}</span>
+                      <div className="flex items-center justify-between bg-theme-tertiary rounded-lg p-3">
+                        <span className="text-sm text-theme-primary font-mono">{copyData}</span>
                         <button
                           onClick={handleCopy}
                           className="ml-2 px-3 py-1 text-xs bg-university-blue text-white rounded hover:bg-blue-700 transition-colors"
@@ -124,7 +124,7 @@ const InfoModal = ({
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    className="inline-flex justify-center rounded-lg bg-university-blue px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors"
+                    className="btn-theme-primary inline-flex justify-center rounded-lg px-6 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     onClick={onClose}
                   >
                     {confirmText}

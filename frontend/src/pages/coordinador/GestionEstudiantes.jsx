@@ -184,6 +184,7 @@ const GestionEstudiantes = () => {
       setTimeout(() => setError(''), 5000)
     } finally {
       setEstudianteAEliminar(null)
+      setShowConfirmModal(false)
     }
   }
 

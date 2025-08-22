@@ -19,7 +19,7 @@ class ControlOperativoPDFGenerator:
         self.margins = {
             'left': 0.75 * inch,
             'right': 0.75 * inch,
-            'top': 1 * inch,
+            'top': 0.4 * inch,
             'bottom': 0.75 * inch
         }
         self.content_width = self.page_width - self.margins['left'] - self.margins['right']
@@ -181,7 +181,7 @@ class ControlOperativoPDFGenerator:
                     break
             
             if escudo_path and escudo_path.endswith('.png'):
-                # Escudo centrado primero
+                # Escudo centrado con tamaño original
                 escudo = Image(escudo_path, width=1*inch, height=1*inch)
                 
                 # Crear tabla solo para centrar el escudo
@@ -192,7 +192,7 @@ class ControlOperativoPDFGenerator:
                     ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),
                 ]))
                 elements.append(escudo_table)
-                elements.append(Spacer(1, 6))
+                elements.append(Spacer(1, 3))
                 
                 # Después el texto universitario
                 elements.append(Paragraph("UNIVERSIDAD COLEGIO MAYOR DE CUNDINAMARCA", self.university_style))
@@ -217,11 +217,11 @@ class ControlOperativoPDFGenerator:
         elements.append(Paragraph("Sede Universidad Pública de Kennedy - Tintal", centered_style))
         elements.append(Paragraph("<i>Aprobado Acuerdo 10/28/2002 Sala de Gobierno RTSJ50 de Bogotá</i>", self.field_style))
         
-        elements.append(Spacer(1, 12))
+        elements.append(Spacer(1, 8))
         
         # Título principal
         elements.append(Paragraph("<b>CONTROL OPERATIVO DE CONSULTA JURÍDICA</b>", self.title_style))
-        elements.append(Spacer(1, 12))
+        elements.append(Spacer(1, 8))
         
         return elements
 
@@ -379,10 +379,10 @@ class ControlOperativoPDFGenerator:
         ]))
         elements.append(fecha_nac_table)
         
-        # Fila de sexo con checkboxes
+        # Fila de sexo con checkboxes mejorados
         sexo_data = [[
             "",
-            f"Femenino {'☑' if control.sexo == 'Femenino' else '☐'}    Masculino {'☑' if control.sexo == 'Masculino' else '☐'}"
+            f"Femenino {'✓' if control.sexo == 'Femenino' else '☐'}    Masculino {'✓' if control.sexo == 'Masculino' else '☐'}"
         ]]
         
         # Estandarizar proporciones para sexo
@@ -420,9 +420,9 @@ class ControlOperativoPDFGenerator:
         ]))
         elements.append(doc_table)
         
-        # Checkboxes para tipo de documento
+        # Checkboxes para tipo de documento con mejor contraste
         tipo_doc_data = [[
-            f"{'☑' if control.tipo_documento == 'T.I.' else '☐'} T.I.    {'☑' if control.tipo_documento == 'C.C.' else '☐'} C.C.    {'☑' if control.tipo_documento == 'NUIP' else '☐'} NUIP",
+            f"{'✓' if control.tipo_documento == 'T.I.' else '☐'} T.I.    {'✓' if control.tipo_documento == 'C.C.' else '☐'} C.C.    {'✓' if control.tipo_documento == 'NUIP' else '☐'} NUIP",
             ""
         ]]
         

@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(rm:*)",
+      "Bash(npm install)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(pkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(grep:*)",
+      "Bash(npm run build:*)",
+      "Bash(fuser:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(pip3 install:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(mv:*)",
+      "Bash(true)",
+      "Bash(sed:*)",
+      "Bash(kill:*)",
+      "Bash(python:*)"
+    ],
+    "deny": []
+  }
+}

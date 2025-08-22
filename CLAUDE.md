@@ -1,64 +1,57 @@
-# 🔧 AJUSTE DE CUADRÍCULAS - PDF CONTROL OPERATIVO
+# 🔧 TAREAS DE FUNCIONALIDAD DEL PROYECTO
 
-## 📐 PROBLEMA DE ANCHURAS INCONSISTENTES
+## 🎯 TAREAS A REALIZAR
 
-**PROBLEMA IDENTIFICADO:** Las cuadrículas tienen diferentes anchuras - unas más angostas y otras más anchas
+### 1. 📊 DASHBOARD CON DATOS REALES
+**PROBLEMA:** El dashboard muestra métricas que no existen y no tiene coherencia con la base de datos
 
-### 🎯 SOLUCIÓN REQUERIDA:
+**SOLUCIÓN REQUERIDA:**
+- Conectar el dashboard con la base de datos real
+- Mostrar métricas verdaderas basadas en los datos existentes
+- Hacer que todas las estadísticas sean funcionales y actualizadas
+- Eliminar datos ficticios y usar información real del backend
 
-#### Estandarizar Anchuras:
-- **Ajustar todas las cuadrículas** a la misma anchura que los títulos de las secciones
-- **Uniformizar el ancho** de todas las tablas y campos
-- **Eliminar inconsistencias** visuales entre secciones
+---
 
-#### Secciones a Ajustar:
-1. **I. DATOS DEL USUARIO** - cuadrícula principal
-2. **II. INFORMACIÓN GENERAL DEL CONSULTANTE** - todos los campos internos
-3. **III. BREVE DESCRIPCIÓN DEL CASO** - área de texto
-4. **Todas las subcuadrículas** internas
+### 2. 🔔 ACTIVIDAD RECIENTE FUNCIONAL
+**PROBLEMA:** La actividad reciente no es real ni funcional
 
-### 🔧 ACCIONES ESPECÍFICAS:
+**SOLUCIÓN REQUERIDA:**
+- Hacer que la actividad reciente sea 100% funcional
+- Registrar las acciones reales que hacen los estudiantes y coordinadores
+- Crear un sistema de notificaciones que funcione como registro de actividades
+- Mostrar actividades verdaderas basadas en las acciones del sistema
 
-#### 1. Anchura de Referencia:
-- **Usar como base** la anchura de los títulos de sección (I, II, III, etc.)
-- **Aplicar la misma anchura** a todas las cuadrículas de contenido
+---
 
-#### 2. Campos a Estandarizar:
-- Cuadrículas de datos personales
-- Campos de fecha (Día, Mes, Año)
-- Campos de información del consultante
-- Áreas de texto
-- Campos de firma
+### 3. 🌙 TEMA OSCURO COMPLETO
+**PROBLEMA:** El tema oscuro solo se aplica al header y no a toda la página web
 
-#### 3. CSS/HTML a Revisar:
-```css
-/* Ejemplo de lo que debe ajustarse */
-.grid-container {
-    width: 100%; /* Mismo ancho para todas */
-}
+**SOLUCIÓN REQUERIDA:**
+- Aplicar el tema oscuro a TODA la página web
+- Incluir coordinador y estudiante en el tema oscuro
+- Modificar TODOS los componentes: sidebar, gestión de estudiantes, control operativo, etc.
+- Tienes libertad de poner los colores que creas convenientes
+- Cambiar TODO porque actualmente el sidebar sigue igual y todas las secciones también
 
-.section-content {
-    width: 100%; /* Heredar ancho del título */
-}
+---
 
-table, td, tr {
-    width: 100%; /* Estandarizar tablas */
-}
-```
+### 4. 🎯 SESIÓN DE ESTUDIANTES - PROBLEMAS
+**PROBLEMAS IDENTIFICADOS:**
+- En la sesión de estudiantes NO se está aplicando el nuevo dashboard (está igual que antes)
+- El tema oscuro NO se está aplicando en la sesión de estudiantes
 
-### 📏 RESULTADO ESPERADO:
+**SOLUCIÓN REQUERIDA:**
+- Implementar el nuevo dashboard para estudiantes
+- Hacer que el tema oscuro funcione en la sesión de estudiantes
+- Asegurar que ambas funcionalidades estén operativas
 
-- **Todas las cuadrículas** con la misma anchura
-- **Alineación perfecta** entre títulos y contenido
-- **Consistencia visual** en todo el documento
-- **Aspecto profesional** y ordenado
+## ✅ RESULTADO ESPERADO
 
-### ✅ VERIFICACIÓN:
-- ✅ Sección I: cuadrículas alineadas con título
-- ✅ Sección II: todos los campos del mismo ancho
-- ✅ Sección III: área de texto con anchura correcta
-- ✅ Sin diferencias visuales entre secciones
-- ✅ PDF con aspecto profesional y uniforme
+- **Dashboard:** Conectado con base de datos real mostrando métricas verdaderas
+- **Actividad Reciente:** Sistema funcional que registre acciones reales de usuarios
+- **Tema Oscuro:** Aplicado en toda la aplicación para ambos roles
+- **Estudiantes:** Nuevo dashboard implementado y tema oscuro funcionando
 
-## 🚨 PRIORIDAD
-Este ajuste es importante para mantener la calidad visual y profesional del documento PDF generado.
+## 🚨 VERIFICAR QUE TODO FUNCIONE
+Después de implementar, verificar que todas las funcionalidades estén operativas y conectadas correctamente con el backend y la base de datos.

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Registro Estudiante</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background: #f0f9ff;
+        }
+        .test-section { 
+            background: white; 
+            border: 1px solid #ddd; 
+            border-radius: 8px;
+            padding: 20px; 
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button { 
+            background: #3b82f6; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .result { 
+            background: #f8f9fa; 
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px; 
+            margin: 10px 0; 
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { border-left: 4px solid #10b981; background: #f0fdf4; }
+        .error { border-left: 4px solid #ef4444; background: #fef2f2; }
+        .info { border-left: 4px solid #3b82f6; background: #eff6ff; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test del Sistema de Registro de Estudiantes</h1>
+    
+    <div class="test-section">
+        <h2>📋 Datos de Prueba Disponibles</h2>
+        <div class="info result">
+Estudiantes disponibles para registro:
+• Carlos Eduardo Martínez Silva - Doc: 5555666677 - Código: DER2024003
+• Ana Sofía Hernández Gómez - Doc: 7777888899 - Código: DER2024004  
+• Nicolas Melo - Doc: 1070924296 - Código: DER66866156
+• Daniel Perez - Doc: 12345678910 - Código: DER6980BE25
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Test 1: Validación de Datos Personales</h2>
+        <button onclick="testValidacionDatos()">Probar Validación</button>
+        <div id="validacion-result" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🌐 Test 2: Acceso Frontend</h2>
+        <button onclick="testFrontend()">Probar Frontend</button>
+        <div id="frontend-result" class="result" style="display:none;"></div>
+        
+        <h3>Enlaces Directos:</h3>
+        <button onclick="abrirRegistro()">🎓 Abrir Registro (con datos)</button>
+        <button onclick="abrirRegistroVacio()">📝 Abrir Registro (vacío)</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Estado de Servicios</h2>
+        <button onclick="checkServicios()">Verificar Servicios</button>
+        <div id="servicios-result" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8005/api';
+        const FRONTEND_URL = 'http://localhost:3001';
+
+        async function testValidacionDatos() {
+            const resultDiv = document.getElementById('validacion-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Probando validación...';
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/validar-datos-personales`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nombre: 'Carlos Eduardo',
+                        apellidos: 'Martínez Silva',
+                        documento_numero: '5555666677'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.valido && data.estudiante && data.estudiante.codigo_estudiante) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ VALIDACIÓN EXITOSA\n\nDatos encontrados:\n• Nombre: ${data.estudiante.nombre} ${data.estudiante.apellidos}\n• Código: ${data.estudiante.codigo_estudiante}\n• Email: ${data.estudiante.email_institucional}\n• Programa: ${data.estudiante.programa_academico}\n• Semestre: ${data.estudiante.semestre}\n\nMensaje: ${data.mensaje}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ PROBLEMA EN LA VALIDACIÓN\n\nRespuesta: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ERROR EN LA CONEXIÓN\n\nError: ${error.message}`;
+            }
+        }
+
+        async function testFrontend() {
+            const resultDiv = document.getElementById('frontend-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Probando frontend...';
+            
+            try {
+                const response = await fetch(FRONTEND_URL);
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ FRONTEND FUNCIONANDO\n\nURL: ${FRONTEND_URL}\nStatus: ${response.status} ${response.statusText}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ PROBLEMA CON FRONTEND\n\nStatus: ${response.status} ${response.statusText}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ERROR CONECTANDO AL FRONTEND\n\nError: ${error.message}`;
+            }
+        }
+
+        async function checkServicios() {
+            const resultDiv = document.getElementById('servicios-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Verificando servicios...';
+            
+            let status = '📊 ESTADO DE SERVICIOS:\n\n';
+            
+            // Check Backend
+            try {
+                const backendResponse = await fetch(`${API_URL}/auth/me`);
+                status += `🔧 Backend (${API_URL}): ✅ Accesible\n`;
+            } catch (error) {
+                status += `🔧 Backend (${API_URL}): ❌ Error - ${error.message}\n`;
+            }
+            
+            // Check Frontend
+            try {
+                const frontendResponse = await fetch(FRONTEND_URL);
+                status += `⚛️ Frontend (${FRONTEND_URL}): ✅ Accesible\n`;
+            } catch (error) {
+                status += `⚛️ Frontend (${FRONTEND_URL}): ❌ Error - ${error.message}\n`;
+            }
+
+            resultDiv.className = 'result info';
+            resultDiv.textContent = status;
+        }
+
+        function abrirRegistro() {
+            const url = `${FRONTEND_URL}/registro-estudiante?nombre=Carlos%20Eduardo&apellidos=Mart%C3%ADnez%20Silva&documento_numero=5555666677`;
+            window.open(url, '_blank');
+        }
+
+        function abrirRegistroVacio() {
+            const url = `${FRONTEND_URL}/registro-estudiante`;
+            window.open(url, '_blank');
+        }
+
+        // Auto-check al cargar la página
+        window.addEventListener('load', () => {
+            setTimeout(checkServicios, 1000);
+        });
+    </script>
+</body>
+</html>

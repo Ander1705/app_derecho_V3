@@ -1,212 +1,307 @@
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
 import { 
-  BookOpenIcon,
-  AcademicCapIcon,
-  DocumentTextIcon,
-  UserIcon,
   ClipboardDocumentListIcon,
+  PlusIcon,
+  UserIcon,
+  BookOpenIcon,
   CalendarIcon,
-  BellIcon,
-  ScaleIcon,
-  ChartBarIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  InformationCircleIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 
 const DashboardEstudiante = () => {
   const { user } = useAuth()
+  const [progreso, setProgreso] = useState({
+    misReportes: 0,
+    ultimoReporte: null,
+    estado: 'Activo'
+  })
+  const [recordatorios, setRecordatorios] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    cargarDatos()
+  }, [])
+
+  const cargarDatos = async () => {
+    try {
+      setLoading(true)
+      // Cargar estadísticas del estudiante
+      const [estadisticasRes] = await Promise.all([
+        axios.get('/api/estudiante/estadisticas')
+      ])
+      
+      setProgreso({
+        misReportes: estadisticasRes.data.controles_creados || 0,
+        ultimoReporte: estadisticasRes.data.fecha_registro ? 
+          new Date(estadisticasRes.data.fecha_registro).toLocaleDateString('es-ES') : 'Sin reportes',
+        estado: 'Activo'
+      })
+      
+      // Recordatorios basados en datos reales
+      const recordatoriosArray = []
+      if (!user?.telefono) {
+        recordatoriosArray.push({ id: 1, mensaje: 'Completa tu información de perfil - agrega un teléfono', tipo: 'info' })
+      }
+      if (estadisticasRes.data.controles_creados === 0) {
+        recordatoriosArray.push({ id: 2, mensaje: 'Crea tu primer control operativo', tipo: 'tip' })
+      }
+      if (recordatoriosArray.length === 0) {
+        recordatoriosArray.push({ id: 3, mensaje: 'Todo está al día. ¡Excelente trabajo!', tipo: 'tip' })
+      }
+      
+      setRecordatorios(recordatoriosArray)
+    } catch (error) {
+      console.error('Error cargando datos del dashboard:', error)
+      // Datos por defecto en caso de error
+      setProgreso({
+        misReportes: 0,
+        ultimoReporte: 'Sin reportes',
+        estado: 'Activo'
+      })
+      setRecordatorios([
+        { id: 1, mensaje: 'Error cargando datos. Intenta refrescar la página.', tipo: 'info' }
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getReminderIcon = (tipo) => {
+    switch (tipo) {
+      case 'info':
+        return <InformationCircleIcon className="h-5 w-5 text-blue-500" />
+      case 'tip':
+        return <SparklesIcon className="h-5 w-5 text-purple-500" />
+      default:
+        return <InformationCircleIcon className="h-5 w-5 text-gray-500" />
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-full bg-theme-secondary flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-university-purple mx-auto"></div>
+          <p className="mt-4 text-theme-secondary">Cargando dashboard...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                <BookOpenIcon className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">¡Bienvenido, {user?.nombre}!</h1>
-                <p className="text-gray-600 mt-1">Portal de Estudiante - {user?.programa_academico}</p>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-full bg-theme-secondary">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        
+        {/* Bienvenida */}
+        <div className="card-theme rounded-xl shadow-theme p-6 mb-6">
+          <h1 className="text-2xl font-semibold text-theme-primary mb-2">
+            Hola, {user?.nombre}
+          </h1>
+          <p className="text-theme-secondary">
+            Tu espacio de consultoría jurídica
+          </p>
         </div>
 
-        {/* Información del Estudiante */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <AcademicCapIcon className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Código Estudiantil</p>
-                <p className="text-lg font-bold text-gray-900 font-mono">{user?.codigo_estudiante}</p>
-              </div>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <CalendarIcon className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Semestre</p>
-                <p className="text-lg font-bold text-gray-900">{user?.semestre}°</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <ScaleIcon className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Casos Activos</p>
-                <p className="text-lg font-bold text-gray-900">0</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                <DocumentTextIcon className="w-6 h-6 text-orange-600" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Consultas</p>
-                <p className="text-lg font-bold text-gray-900">0</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Accesos Rápidos */}
-        <div className="bg-white shadow-sm border border-gray-200 rounded-xl p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <ChartBarIcon className="w-6 h-6 mr-2 text-university-blue" />
-            Accesos Rápidos
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link
-              to="/perfil-estudiante"
-              className="group bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4 hover:from-green-100 hover:to-blue-100 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <UserIcon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h4 className="text-gray-900 font-medium">Mi Perfil</h4>
-                  <p className="text-gray-600 text-sm">Ver información personal</p>
-                </div>
-              </div>
-            </Link>
+          {/* Columna Principal */}
+          <div className="lg:col-span-2 space-y-8">
             
-            <Link
-              to="/mis-casos"
-              className="group bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4 hover:from-purple-100 hover:to-blue-100 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <ScaleIcon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h4 className="text-gray-900 font-medium">Mis Casos</h4>
-                  <p className="text-gray-600 text-sm">Casos asignados</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link
-              to="/consultas"
-              className="group bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-4 hover:from-orange-100 hover:to-red-100 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                  <DocumentTextIcon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h4 className="text-gray-900 font-medium">Consultas Jurídicas</h4>
-                  <p className="text-gray-600 text-sm">Solicitar asesoría</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link
-              to="/documentos-estudiante"
-              className="group bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 hover:from-blue-100 hover:to-indigo-100 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <ClipboardDocumentListIcon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h4 className="text-gray-900 font-medium">Documentos</h4>
-                  <p className="text-gray-600 text-sm">Mis documentos</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Estado del Sistema */}
-        <div className="bg-white shadow-sm border border-gray-200 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Mi Información Académica
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <div className="space-y-3">
-                <div>
-                  <span className="text-gray-500 text-sm">Nombre Completo:</span>
-                  <span className="text-gray-900 ml-2 font-medium">{user?.nombre} {user?.apellidos}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 text-sm">Email Institucional:</span>
-                  <span className="text-gray-900 ml-2">{user?.email}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 text-sm">Programa Académico:</span>
-                  <span className="text-gray-900 ml-2">{user?.programa_academico}</span>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="space-y-3">
-                <div>
-                  <span className="text-gray-500 text-sm">Código de Estudiante:</span>
-                  <span className="text-gray-900 ml-2 font-mono bg-gray-100 px-2 py-1 rounded">{user?.codigo_estudiante}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 text-sm">Semestre Actual:</span>
-                  <span className="text-gray-900 ml-2">{user?.semestre}° Semestre</span>
-                </div>
-                {user?.telefono && (
-                  <div>
-                    <span className="text-gray-500 text-sm">Teléfono:</span>
-                    <span className="text-gray-900 ml-2">{user?.telefono}</span>
+            {/* Mi Actividad */}
+            <div className="card-theme rounded-xl shadow-theme p-6">
+              <h2 className="text-xl font-semibold text-theme-primary mb-6">
+                Mi Actividad
+              </h2>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600 mb-1">
+                    {progreso.misReportes}
                   </div>
-                )}
+                  <div className="text-sm text-theme-secondary">
+                    Mis Reportes
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-sm font-semibold text-theme-primary mb-1">
+                    {progreso.ultimoReporte}
+                  </div>
+                  <div className="text-sm text-theme-secondary">
+                    Último Reporte
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-sm font-semibold text-green-600 mb-1">
+                    {progreso.estado}
+                  </div>
+                  <div className="text-sm text-theme-secondary">
+                    Estado
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-sm font-semibold text-theme-primary mb-1">
+                    {user?.codigo_estudiante || '#EST2025'}
+                  </div>
+                  <div className="text-sm text-theme-secondary">
+                    Código
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Acciones Rápidas */}
+            <div className="card-theme rounded-xl shadow-theme p-6">
+              <h2 className="text-xl font-semibold text-theme-primary mb-6">
+                Acciones Rápidas
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link
+                  to="/control-operativo-estudiante"
+                  className="group border-theme rounded-lg p-4 hover:bg-theme-tertiary transition-colors duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <PlusIcon className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-theme-primary">Nuevo Reporte</h3>
+                      <p className="text-sm text-theme-secondary">Crear control operativo</p>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  to="/mis-reportes"
+                  className="group border-theme rounded-lg p-4 hover:bg-theme-tertiary transition-colors duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <ClipboardDocumentListIcon className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-theme-primary">Ver Mis Reportes</h3>
+                      <p className="text-sm text-theme-secondary">Historial de controles</p>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  to="/perfil-estudiante"
+                  className="group border-theme rounded-lg p-4 hover:bg-theme-tertiary transition-colors duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <UserIcon className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-theme-primary">Mi Perfil</h3>
+                      <p className="text-sm text-theme-secondary">Configurar cuenta</p>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  to="/guias"
+                  className="group border-theme rounded-lg p-4 hover:bg-theme-tertiary transition-colors duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <BookOpenIcon className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-theme-primary">Ayuda</h3>
+                      <p className="text-sm text-theme-secondary">Soporte y guías</p>
+                    </div>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>
-          
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h4 className="text-green-800 font-medium mb-2 flex items-center">
-              <CheckCircleIcon className="w-5 h-5 mr-2" />
-              ✅ Cuenta Activa y Configurada
-            </h4>
-            <ul className="text-green-700 text-sm space-y-1">
-              <li>• Tu cuenta de estudiante está completamente configurada</li>
-              <li>• Tienes acceso a todos los servicios del portal</li>
-              <li>• Puedes realizar consultas jurídicas y gestionar tus casos</li>
-              <li>• Para cualquier consulta, contacta al coordinador del programa</li>
-            </ul>
+
+          {/* Sidebar Derecho */}
+          <div className="space-y-6">
+            
+            {/* Recordatorios */}
+            <div className="card-theme rounded-xl shadow-theme p-6">
+              <h2 className="text-xl font-semibold text-theme-primary mb-4 flex items-center">
+                <InformationCircleIcon className="h-5 w-5 mr-2 text-blue-500" />
+                Recordatorios
+              </h2>
+              
+              <div className="space-y-4">
+                {recordatorios.map((recordatorio) => (
+                  <div key={recordatorio.id} className="flex items-start space-x-3 p-3 bg-theme-tertiary rounded-lg">
+                    {getReminderIcon(recordatorio.tipo)}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-theme-primary">{recordatorio.mensaje}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Información Personal */}
+            <div className="card-theme rounded-xl shadow-theme p-6">
+              <h2 className="text-xl font-semibold text-theme-primary mb-4">
+                Mi Información
+              </h2>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm text-theme-secondary">Programa</span>
+                  <span className="text-sm font-medium text-theme-primary">Derecho</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm text-theme-secondary">Semestre</span>
+                  <span className="text-sm font-medium text-theme-primary">{user?.semestre || '6°'}</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm text-theme-secondary">Estado</span>
+                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                    ✅ Activo
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm text-theme-secondary">Universidad</span>
+                  <span className="text-sm text-theme-muted">UCMC</span>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-theme">
+                <Link
+                  to="/perfil-estudiante"
+                  className="text-sm text-university-purple hover:text-purple-700 font-medium"
+                >
+                  Actualizar información →
+                </Link>
+              </div>
+            </div>
+
+            {/* Acceso Rápido */}
+            <div className="bg-gradient-to-r from-university-purple to-purple-700 rounded-xl p-6 text-white">
+              <h3 className="font-semibold text-lg mb-2">¿Necesitas ayuda?</h3>
+              <p className="text-purple-100 text-sm mb-4">
+                Consulta nuestras guías o contacta con el coordinador
+              </p>
+              <Link
+                to="/soporte"
+                className="inline-flex items-center px-4 py-2 bg-white/20 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors"
+              >
+                📞 Obtener Ayuda
+              </Link>
+            </div>
           </div>
         </div>
       </div>

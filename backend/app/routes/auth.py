@@ -12,6 +12,7 @@ from app.middleware.auth import AuthMiddleware
 from app.models.user import User, UserRole
 from app.models.password_reset import PasswordResetToken
 from app.models.estudiante_valido import EstudianteValido, EstadoRegistro
+from app.models.control_operativo import ControlOperativo
 from app.services.email_service import email_service
 
 router = APIRouter()
@@ -712,10 +713,16 @@ async def eliminar_estudiante(
                 detail="❌ Estudiante no encontrado."
             )
         
-        # Si el estudiante ya se registró, también eliminar el usuario
+        # Si el estudiante ya se registró, también eliminar el usuario y sus controles operativos
         if estudiante.estado == EstadoRegistro.REGISTRADO:
             usuario = db.query(User).filter(User.codigo_estudiante == estudiante.codigo_estudiante).first()
             if usuario:
+                # Primero eliminar todos los controles operativos creados por este usuario
+                controles = db.query(ControlOperativo).filter(ControlOperativo.created_by == usuario.id).all()
+                for control in controles:
+                    db.delete(control)
+                
+                # Luego eliminar el usuario
                 db.delete(usuario)
         
         db.delete(estudiante)
@@ -724,12 +731,14 @@ async def eliminar_estudiante(
         return {"mensaje": "✅ Estudiante eliminado correctamente."}
         
     except HTTPException:
+        db.rollback()
         raise
     except Exception as e:
+        db.rollback()
         print(f"❌ Error eliminando estudiante: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error interno del servidor. Inténtalo nuevamente."
+            detail=f"Error eliminando estudiante: {str(e)}"
         )
 
 @router.put("/coordinador/estudiante/{estudiante_id}", response_model=EstudianteValidoResponse)
@@ -799,6 +808,311 @@ async def actualizar_estudiante(
         raise
     except Exception as e:
         print(f"❌ Error actualizando estudiante: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor. Inténtalo nuevamente."
+        )
+
+# =============================================================================
+# RUTAS DE PERFIL DE USUARIO
+# =============================================================================
+
+class ActualizarPerfilRequest(BaseModel):
+    nombre: str
+    apellidos: str
+    email: str
+    telefono: Optional[str] = None
+
+class CambiarPasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+@router.put("/perfil")
+async def actualizar_perfil(
+    request: ActualizarPerfilRequest,
+    current_user: User = Depends(AuthMiddleware.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Actualizar perfil del usuario actual"""
+    try:
+        # Verificar si el email ya existe para otro usuario
+        existing_user = db.query(User).filter(
+            User.email == request.email.lower(),
+            User.id != current_user.id
+        ).first()
+        
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="❌ Ya existe otro usuario con ese email."
+            )
+        
+        # Actualizar datos del usuario
+        current_user.nombre = request.nombre
+        current_user.apellidos = request.apellidos
+        current_user.email = request.email.lower()
+        if request.telefono:
+            current_user.telefono = request.telefono
+        
+        db.commit()
+        db.refresh(current_user)
+        
+        return {
+            "id": current_user.id,
+            "nombre": current_user.nombre,
+            "apellidos": current_user.apellidos,
+            "email": current_user.email,
+            "telefono": current_user.telefono,
+            "codigo_estudiante": current_user.codigo_estudiante,
+            "role": current_user.role
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error actualizando perfil: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor. Inténtalo nuevamente."
+        )
+
+@router.put("/cambiar-password")
+async def cambiar_password(
+    request: CambiarPasswordRequest,
+    current_user: User = Depends(AuthMiddleware.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Cambiar contraseña del usuario actual"""
+    try:
+        # Verificar contraseña actual
+        if not SecurityConfig.verify_password(request.current_password, current_user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="❌ La contraseña actual es incorrecta."
+            )
+        
+        # Validar nueva contraseña
+        if len(request.new_password) < 6:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="❌ La nueva contraseña debe tener al menos 6 caracteres."
+            )
+        
+        # Actualizar contraseña
+        current_user.password_hash = SecurityConfig.hash_password(request.new_password)
+        
+        db.commit()
+        
+        return {"mensaje": "✅ Contraseña actualizada correctamente."}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error cambiando contraseña: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor. Inténtalo nuevamente."
+        )
+
+# =============================================================================
+# RUTAS DE ESTADÍSTICAS DE ESTUDIANTE
+# =============================================================================
+
+@router.get("/estudiante/estadisticas")
+async def obtener_estadisticas_estudiante(
+    current_user: User = Depends(AuthMiddleware.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtener estadísticas del estudiante actual"""
+    try:
+        # Verificar que el usuario sea estudiante
+        if current_user.role != UserRole.ESTUDIANTE:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="❌ Solo los estudiantes pueden acceder a estas estadísticas."
+            )
+        
+        # Contar controles operativos creados por el estudiante
+        controles_creados = db.query(ControlOperativo).filter(
+            ControlOperativo.created_by == current_user.id
+        ).count()
+        
+        return {
+            "controles_creados": controles_creados,
+            "ultimo_acceso": current_user.last_login,
+            "fecha_registro": current_user.created_at
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error obteniendo estadísticas: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor. Inténtalo nuevamente."
+        )
+
+# =============================================================================
+# RUTAS DE MÉTRICAS Y ACTIVIDAD PARA COORDINADOR
+# =============================================================================
+
+def verificar_coordinador_auth(current_user: User = Depends(AuthMiddleware.get_current_user)):
+    """Middleware para verificar que el usuario es coordinador"""
+    if current_user.role != UserRole.COORDINADOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="❌ Solo el coordinador puede acceder a esta información."
+        )
+    return current_user
+
+@router.get("/coordinador/metricas")
+async def obtener_metricas_coordinador(
+    current_user: User = Depends(verificar_coordinador_auth),
+    db: Session = Depends(get_db)
+):
+    """Obtener métricas del dashboard del coordinador"""
+    try:
+        # Contar estudiantes registrados
+        estudiantes_registrados = db.query(EstudianteValido).filter(
+            EstudianteValido.estado == EstadoRegistro.REGISTRADO
+        ).count()
+        
+        # Contar estudiantes pendientes
+        estudiantes_pendientes = db.query(EstudianteValido).filter(
+            EstudianteValido.estado == EstadoRegistro.VALIDADO
+        ).count()
+        
+        # Contar controles operativos del mes actual
+        from datetime import datetime, timedelta
+        fecha_inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        reportes_este_mes = db.query(ControlOperativo).filter(
+            ControlOperativo.created_at >= fecha_inicio_mes
+        ).count()
+        
+        # Contar total de reportes
+        total_reportes = db.query(ControlOperativo).count()
+        
+        return {
+            "estudiantesRegistrados": estudiantes_registrados,
+            "estudiantesPendientes": estudiantes_pendientes,
+            "reportesEsteMes": reportes_este_mes,
+            "totalReportes": total_reportes
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error obteniendo métricas del coordinador: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor. Inténtalo nuevamente."
+        )
+
+@router.get("/coordinador/actividad-reciente")
+async def obtener_actividad_reciente(
+    current_user: User = Depends(verificar_coordinador_auth),
+    db: Session = Depends(get_db)
+):
+    """Obtener actividad reciente para el dashboard del coordinador"""
+    try:
+        actividad = []
+        
+        # Últimos estudiantes registrados
+        estudiantes_recientes = db.query(EstudianteValido).filter(
+            EstudianteValido.estado == EstadoRegistro.REGISTRADO
+        ).order_by(EstudianteValido.updated_at.desc()).limit(3).all()
+        
+        for estudiante in estudiantes_recientes:
+            if estudiante.updated_at:
+                tiempo_transcurrido = datetime.now() - estudiante.updated_at
+                if tiempo_transcurrido.days == 0:
+                    if tiempo_transcurrido.seconds < 3600:
+                        tiempo = "Hace menos de 1 hora"
+                    else:
+                        tiempo = f"Hace {tiempo_transcurrido.seconds // 3600} horas"
+                else:
+                    tiempo = f"Hace {tiempo_transcurrido.days} días"
+            else:
+                tiempo = "Recientemente"
+                
+            actividad.append({
+                "id": f"estudiante_{estudiante.id}",
+                "tipo": "registro",
+                "mensaje": f"{estudiante.nombre} {estudiante.apellidos} completó su registro",
+                "tiempo": tiempo,
+                "timestamp": estudiante.updated_at or estudiante.created_at
+            })
+        
+        # Últimos controles operativos
+        controles_recientes = db.query(ControlOperativo).order_by(
+            ControlOperativo.created_at.desc()
+        ).limit(3).all()
+        
+        for control in controles_recientes:
+            if control.created_at:
+                tiempo_transcurrido = datetime.now() - control.created_at
+                if tiempo_transcurrido.days == 0:
+                    if tiempo_transcurrido.seconds < 3600:
+                        tiempo = "Hace menos de 1 hora"
+                    else:
+                        tiempo = f"Hace {tiempo_transcurrido.seconds // 3600} horas"
+                else:
+                    tiempo = f"Hace {tiempo_transcurrido.days} días"
+            else:
+                tiempo = "Recientemente"
+                
+            actividad.append({
+                "id": f"control_{control.id}",
+                "tipo": "reporte",
+                "mensaje": f"Nuevo reporte: Control Operativo #{control.id}",
+                "tiempo": tiempo,
+                "timestamp": control.created_at
+            })
+        
+        # Ordenar por timestamp (más reciente primero) y limitar a 5 elementos
+        actividad_ordenada = sorted(actividad, key=lambda x: x.get("timestamp", datetime.min), reverse=True)[:5]
+        
+        # Remover timestamp del resultado final
+        for item in actividad_ordenada:
+            item.pop("timestamp", None)
+            
+        return actividad_ordenada
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error obteniendo actividad reciente: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor. Inténtalo nuevamente."
+        )
+
+@router.get("/coordinador/estadisticas-perfil")
+async def obtener_estadisticas_perfil_coordinador(
+    current_user: User = Depends(verificar_coordinador_auth),
+    db: Session = Depends(get_db)
+):
+    """Obtener estadísticas del perfil del coordinador"""
+    try:
+        # Contar estudiantes gestionados (todos los estudiantes registrados)
+        estudiantes_gestionados = db.query(EstudianteValido).count()
+        
+        # Contar reportes supervisados (total de controles operativos)
+        reportes_supervisados = db.query(ControlOperativo).count()
+        
+        return {
+            "estudiantes_gestionados": estudiantes_gestionados,
+            "reportes_supervisados": reportes_supervisados,
+            "ultimo_acceso": current_user.last_login,
+            "fecha_ingreso": current_user.created_at
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error obteniendo estadísticas del perfil coordinador: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error interno del servidor. Inténtalo nuevamente."
